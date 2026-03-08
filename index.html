@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shield vs Storm</title>
+  <style>
+    :root {
+      --bg-top: #08101a;
+      --bg-bottom: #05111d;
+      --panel: rgba(8, 19, 31, 0.78);
+      --panel-soft: rgba(10, 24, 39, 0.62);
+      --line: rgba(126, 191, 255, 0.22);
+      --ink: #eef6ff;
+      --muted: #97afc9;
+      --sky: #5dd9ff;
+      --amber: #ffca67;
+      --red: #ff7364;
+      --green: #79e39e;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Avenir Next Condensed", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 600px at 0% 0%, rgba(31, 95, 145, 0.32), transparent 60%),
+        radial-gradient(700px 500px at 100% 0%, rgba(138, 71, 39, 0.28), transparent 55%),
+        linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(circle at center, black, transparent 85%);
+      opacity: 0.6;
+    }
+
+    .shell {
+      width: min(1380px, calc(100vw - 24px));
+      margin: 18px auto;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .controls {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--sky);
+      margin: 0;
+    }
+
+    .title {
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      letter-spacing: 0.05em;
+      font-size: 36px;
+      line-height: 0.95;
+      margin: 0;
+    }
+
+    .lede, .small {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .section {
+      padding: 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(16, 34, 52, 0.88), rgba(8, 20, 33, 0.7));
+      border: 1px solid rgba(134, 189, 243, 0.14);
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #dceefe;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .field {
+      flex: 1;
+      min-width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    select,
+    input {
+      width: 100%;
+      background: rgba(3, 10, 18, 0.92);
+      color: var(--ink);
+      border: 1px solid rgba(116, 176, 225, 0.28);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid rgba(96, 197, 255, 0.38);
+      background: linear-gradient(180deg, rgba(22, 77, 116, 0.95), rgba(11, 35, 58, 0.98));
+      color: #f2fbff;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(9, 65, 105, 0.35);
+      border-color: rgba(111, 210, 255, 0.62);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button.warn {
+      border-color: rgba(255, 198, 95, 0.45);
+      background: linear-gradient(180deg, rgba(133, 90, 22, 0.95), rgba(66, 44, 10, 0.98));
+      color: #ffefce;
+    }
+
+    button.danger {
+      border-color: rgba(255, 120, 104, 0.5);
+      background: linear-gradient(180deg, rgba(125, 38, 31, 0.96), rgba(66, 16, 13, 0.98));
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      background: var(--panel-soft);
+      border: 1px solid rgba(126, 191, 255, 0.16);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .stat .label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 6px;
+    }
+
+    .stat strong {
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: 24px;
+      letter-spacing: 0.03em;
+      font-weight: 700;
+    }
+
+    .main {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 6px 4px 0;
+    }
+
+    .banner h2 {
+      margin: 0;
+      font-size: 24px;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      letter-spacing: 0.04em;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      border: 1px solid rgba(118, 189, 245, 0.22);
+      background: rgba(10, 24, 38, 0.7);
+      color: #d6e9fb;
+    }
+
+    #battlefield {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16 / 10;
+      border-radius: 24px;
+      border: 1px solid rgba(116, 182, 235, 0.16);
+      background: #07111b;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .health-card {
+      background: rgba(7, 17, 28, 0.72);
+      border: 1px solid rgba(126, 191, 255, 0.14);
+      border-radius: 16px;
+      padding: 10px;
+    }
+
+    .health-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .health-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bar {
+      height: 8px;
+      margin-top: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff6e63, #ffca67 45%, #7ce8a2 100%);
+    }
+
+    .bottom {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 12px;
+    }
+
+    .log, .brief {
+      min-height: 180px;
+      background: rgba(7, 17, 28, 0.72);
+      border: 1px solid rgba(126, 191, 255, 0.14);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .log {
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .log-entry {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .brief ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .brief li {
+      margin-bottom: 8px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .health-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .bottom {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100vw - 16px, 1380px);
+        margin: 8px auto 16px;
+        gap: 12px;
+      }
+
+      .controls, .main {
+        padding: 12px;
+      }
+
+      .health-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .title {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="panel controls">
+      <div>
+        <p class="eyebrow">Orion Gulf Theater</p>
+        <h1 class="title">Shield vs Storm</h1>
+        <p class="lede">A browser war game about layered air defense, saturation raids, and hard tradeoffs. You play one alliance; the computer commands the other.</p>
+      </div>
+
+      <section class="section">
+        <h2>Campaign</h2>
+        <div class="row">
+          <div class="field">
+            <label for="role">Player Role</label>
+            <select id="role">
+              <option value="defender">Alliance A: Skyshield</option>
+              <option value="attacker">Alliance B: Crimson Tide</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="difficulty">Difficulty</label>
+            <select id="difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <button id="startBtn">Start New Campaign</button>
+          <button id="nextWaveBtn" class="warn">Run Next Wave</button>
+        </div>
+        <p class="small" style="margin-top: 10px;">Defender wins by surviving 10 waves. Attacker wins by destroying the capital or three major cities.</p>
+      </section>
+
+      <section class="section" id="attackerPanel">
+        <h2>Attacker Ops</h2>
+        <div class="row">
+          <div class="field">
+            <label for="weaponType">Weapon</label>
+            <select id="weaponType"></select>
+          </div>
+          <div class="field">
+            <label for="targetType">Target</label>
+            <select id="targetType"></select>
+          </div>
+          <div class="field" style="max-width: 100px;">
+            <label for="qty">Count</label>
+            <input id="qty" type="number" min="1" max="30" value="4" />
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <button id="addAttack">Queue Strike</button>
+          <button id="massAttack" class="danger">Mass Attack</button>
+        </div>
+        <p class="small" id="queueInfo" style="margin-top: 10px;">No strikes queued.</p>
+      </section>
+
+      <section class="section" id="defenderPanel">
+        <h2>Defender Ops</h2>
+        <div class="row">
+          <div class="field">
+            <label for="lr">Long Interceptors</label>
+            <input id="lr" type="number" min="0" max="20" value="3" />
+          </div>
+          <div class="field">
+            <label for="mr">Medium Interceptors</label>
+            <input id="mr" type="number" min="0" max="20" value="5" />
+          </div>
+          <div class="field">
+            <label for="cr">Close Interceptors</label>
+            <input id="cr" type="number" min="0" max="20" value="6" />
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="field">
+            <label for="fighterTarget">Fighter Patrol</label>
+            <select id="fighterTarget"></select>
+          </div>
+          <div class="field">
+            <label for="aaTarget">AA Gun Focus</label>
+            <select id="aaTarget"></select>
+          </div>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <div class="field">
+            <label for="priorityTarget">Priority Target</label>
+            <select id="priorityTarget"></select>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <span class="label">Wave</span>
+          <strong id="waveStat">0 / 10</strong>
+        </div>
+        <div class="stat">
+          <span class="label">Readiness</span>
+          <strong id="budgetStat">0</strong>
+        </div>
+        <div class="stat">
+          <span class="label">Radar Net</span>
+          <strong id="radarStat">0%</strong>
+        </div>
+        <div class="stat">
+          <span class="label">Interceptor Stock</span>
+          <strong id="ammoStat">0</strong>
+        </div>
+      </section>
+    </aside>
+
+    <main class="panel main">
+      <div class="banner">
+        <div>
+          <h2 id="headline">Operational Map</h2>
+          <p class="small" id="statusLine">Choose a side and begin the first wave.</p>
+        </div>
+        <div class="pill" id="modePill">Simulation Idle</div>
+      </div>
+
+      <canvas id="battlefield" width="1280" height="800"></canvas>
+
+      <div class="health-grid" id="hpRow"></div>
+
+      <div class="bottom">
+        <div class="log" id="log"></div>
+        <div class="brief">
+          <h2 style="margin:0; font-size:15px; text-transform:uppercase; letter-spacing:0.14em;">Scenario Notes</h2>
+          <ul>
+            <li>Ballistic missiles are easy to detect but can saturate defenses.</li>
+            <li>Hypersonic gliders are fast, violent, and difficult to intercept.</li>
+            <li>Cruise missiles and drones fly low, threatening radar and cities.</li>
+            <li>Drone swarms can blind the radar net and waste expensive interceptors.</li>
+            <li>Fighters are strongest against drones and cruise missiles, but only if the airbase survives.</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
